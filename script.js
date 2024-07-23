@@ -3,9 +3,12 @@ const playButton = document.getElementById('playButton');
 const srButton = document.getElementById('srButton');
 const audioPlayback = document.getElementById('audioPlayback');
 const srResult = document.getElementById('srResult');
+const translationResult = document.getElementById('translationResult');
+const ttsPlayback = document.getElementById('ttsPlayback');
 
 let mediaRecorder;
 let audioChunks = [];
+let audioBlob;
 
 navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
@@ -16,7 +19,8 @@ navigator.mediaDevices.getUserMedia({ audio: true })
         };
 
         mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
             const audioUrl = URL.createObjectURL(audioBlob);
             audioPlayback.src = audioUrl;
             playButton.disabled = false;
@@ -49,28 +53,71 @@ playButton.addEventListener('click', () => {
 });
 
 srButton.addEventListener('click', () => {
-    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-        const base64Audio = reader.result.split(',')[1];
-        const data = { audio: base64Audio };
-
-        fetch('/host/api/sr', {
+    if (audioBlob) {
+        fetch('http://100.64.145.60:5000/api/sr', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'audio/webm'
             },
-            body: JSON.stringify(data)
+            body: audioBlob
         })
         .then(response => response.json())
         .then(result => {
-            srResult.textContent = result.text;
+            srResult.textContent = result.message;
+            translateButton.disabled = false;
         })
         .catch(error => {
             console.error('Error:', error);
         });
-    };
+    } else {
+        console.error('No audio recorded.');
+    }
+});
 
-    reader.readAsDataURL(audioBlob);
+translateButton.addEventListener('click', () => {
+    const textToTranslate = srResult.textContent;
+    if (textToTranslate) {
+        fetch('http://100.64.145.60:5000/api/translate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: textToTranslate })
+        })
+        .then(response => response.json())
+        .then(result => {
+            translationResult.textContent = result.translation;
+            ttsButton.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    } else {
+        console.error('No text to translate.');
+    }
+});
+
+ttsButton.addEventListener('click', () => {
+    const textToSpeak = translationResult.textContent;
+    if (textToSpeak) {
+        fetch('http://100.64.145.60:5000/api/tts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text: textToSpeak })
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const audioUrl = URL.createObjectURL(blob);
+            ttsPlayback.src = audioUrl;
+            ttsPlayback.style.display = 'block';
+            ttsPlayback.play();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    } else {
+        console.error('No text to speak.');
+    }
 });
