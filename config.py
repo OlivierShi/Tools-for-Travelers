@@ -8,3 +8,8 @@ class BaseConfig():
 
     azure_speech_key = os.getenv('azure_speech_key')
     azure_speech_region = os.getenv('azure_speech_region')
+
+    azure_translator_key = os.getenv('azure_translator_key')
+    azure_translator_location = os.getenv('azure_translator_location')
+
+    db_path = os.path.join(BASE_DIR, "db.sqlite")

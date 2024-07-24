@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Recorder with Speech Recognition</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="container">
@@ -14,11 +15,17 @@
         <button id="srButton" disabled>Speech Recognition</button>
         <p id="srResult"></p>
         <button id="translateButton" disabled>Translate</button>
-        <p id="translationResult"></p>
+        <p id="translationMain"></p>
+        <p id="translationSupplement"></p>
         <button id="ttsButton" disabled>Speak Out</button>
         <audio id="ttsPlayback" controls></audio>
+        <button id="historyButton">Show History</button>
+        <div id="historyContainer" class="scrollable-list"></div>        
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        var endpoint = "{{ endpoint }}";
+    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

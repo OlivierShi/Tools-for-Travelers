@@ -1,14 +1,21 @@
 const recordButton = document.getElementById('recordButton');
 const playButton = document.getElementById('playButton');
 const srButton = document.getElementById('srButton');
+const translateButton = document.getElementById('translateButton');
+const ttsButton = document.getElementById('ttsButton');
+const historyButton = document.getElementById('historyButton');
+
 const audioPlayback = document.getElementById('audioPlayback');
 const srResult = document.getElementById('srResult');
-const translationResult = document.getElementById('translationResult');
+const translationMain = document.getElementById('translationMain');
+const translationSupplement = document.getElementById('translationSupplement');
 const ttsPlayback = document.getElementById('ttsPlayback');
+const historyContainer = document.getElementById('historyContainer');
 
 let mediaRecorder;
 let audioChunks = [];
 let audioBlob;
+let currentUUID;
 
 navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
@@ -33,6 +40,7 @@ navigator.mediaDevices.getUserMedia({ audio: true })
     });
 
 recordButton.addEventListener('mousedown', () => {
+    currentUUID = uuid.v4(); // Generate a new UUID for this recording session
     mediaRecorder.start();
 });
 
@@ -54,10 +62,11 @@ playButton.addEventListener('click', () => {
 
 srButton.addEventListener('click', () => {
     if (audioBlob) {
-        fetch('http://100.64.145.60:5000/api/sr', {
+        fetch(endpoint + '/api/sr', {
             method: 'POST',
             headers: {
-                'Content-Type': 'audio/webm'
+                'Content-Type': 'audio/webm',
+                'Recording-UUID': currentUUID
             },
             body: audioBlob
         })
@@ -77,17 +86,24 @@ srButton.addEventListener('click', () => {
 translateButton.addEventListener('click', () => {
     const textToTranslate = srResult.textContent;
     if (textToTranslate) {
-        fetch('http://100.64.145.60:5000/api/translate', {
+        fetch(endpoint + '/api/translate', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Recording-UUID': currentUUID
             },
             body: JSON.stringify({ text: textToTranslate })
         })
         .then(response => response.json())
         .then(result => {
-            translationResult.textContent = result.translation;
-            ttsButton.disabled = false;
+            const translations = result.translations;
+            const mainTranslation = translations.find(t => t.to === 'ru');
+            const supplementTranslation = translations.find(t => t.to === 'en');
+
+            translationMain.textContent = mainTranslation ? mainTranslation.text : '';
+            translationSupplement.textContent = supplementTranslation ? supplementTranslation.text : '';
+
+            ttsButton.disabled = !translationMain;
         })
         .catch(error => {
             console.error('Error:', error);
@@ -98,12 +114,13 @@ translateButton.addEventListener('click', () => {
 });
 
 ttsButton.addEventListener('click', () => {
-    const textToSpeak = translationResult.textContent;
+    const textToSpeak = translationMain.textContent;
     if (textToSpeak) {
-        fetch('http://100.64.145.60:5000/api/tts', {
+        fetch(endpoint + '/api/tts', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Recording-UUID': currentUUID
             },
             body: JSON.stringify({ text: textToSpeak })
         })
@@ -111,7 +128,7 @@ ttsButton.addEventListener('click', () => {
         .then(blob => {
             const audioUrl = URL.createObjectURL(blob);
             ttsPlayback.src = audioUrl;
-            ttsPlayback.style.display = 'block';
+            // ttsPlayback.style.display = 'block';
             ttsPlayback.play();
         })
         .catch(error => {
@@ -120,4 +137,21 @@ ttsButton.addEventListener('click', () => {
     } else {
         console.error('No text to speak.');
     }
+});
+
+historyButton.addEventListener('click', () => {
+    fetch(endpoint + '/api/history')
+        .then(response => response.json())
+        .then(history => {
+            historyContainer.innerHTML = '';
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history-item');
+                historyItem.innerHTML = `<strong>${item.datetime}</strong><br>Chinese: ${item.Chinese}<br>Russian: ${item.Russian}<br>English: ${item.English}`;
+                historyContainer.appendChild(historyItem);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching history:', error);
+        });
 });
