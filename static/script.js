@@ -16,6 +16,8 @@ let mediaRecorder;
 let audioChunks = [];
 let audioBlob;
 let currentUUID;
+let entryLanguage = 'zh';
+let targetLanguage = 'ru';
 
 navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
@@ -66,7 +68,8 @@ srButton.addEventListener('click', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'audio/webm',
-                'Recording-UUID': currentUUID
+                'Recording-UUID': currentUUID,
+                'lang': entryLanguage
             },
             body: audioBlob
         })
@@ -90,7 +93,8 @@ translateButton.addEventListener('click', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Recording-UUID': currentUUID
+                'Recording-UUID': currentUUID,
+                'lang': entryLanguage
             },
             body: JSON.stringify({ text: textToTranslate })
         })
@@ -120,7 +124,8 @@ ttsButton.addEventListener('click', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Recording-UUID': currentUUID
+                'Recording-UUID': currentUUID,
+                'lang': targetLanguage
             },
             body: JSON.stringify({ text: textToSpeak })
         })
