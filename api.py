@@ -123,7 +123,7 @@ def process_wav(wav_bytes, channels=1, frame_rate=16000):
     audio.export(output_io, format="wav", codec="pcm_s16le")
     return output_io.getvalue()
 
-@app.route('/api/sr', methods=['POST'])
+@app.route('/translator/api/sr', methods=['POST'])
 def speech_recognition():
     uuid = request.headers.get('Recording-UUID')
     lang = request.headers.get("lang")  # the language of the speech to be recognized
@@ -141,7 +141,7 @@ def speech_recognition():
     return jsonify({"message": recognized_text}), 200
 
 
-@app.route('/api/translate', methods=['POST'])
+@app.route('/translator/api/translate', methods=['POST'])
 def translate():
     uuid = request.headers.get('Recording-UUID')
     lang = request.headers.get("lang")  # the language of the text to be translated
@@ -174,7 +174,7 @@ def translate():
     print(f"Translated text: {results}")
     return jsonify({"translations": results}), 200
 
-@app.route('/api/tts', methods=['POST'])
+@app.route('/translator/api/tts', methods=['POST'])
 def text_to_speech():
     uuid = request.headers.get('Recording-UUID')
     lang = request.headers.get("lang")  # the language of the text to be spoken
@@ -199,7 +199,7 @@ def text_to_speech():
     mp3_fp.seek(0)
     return send_file(mp3_fp, mimetype='audio/mpeg', as_attachment=True, download_name='tts_output.mp3')
 
-@app.route('/api/history', methods=['GET'])
+@app.route('/translator/api/history', methods=['GET'])
 def get_history():
     history = tm.get_translation_history()
     sorted_history = sorted(history, key=lambda x: x["datetime"], reverse=True)
