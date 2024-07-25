@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Recorder with Speech Recognition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='translator/styles.css') }}">
 </head>
 <body>
     <div class="container">
@@ -32,6 +32,6 @@
     <script>
         var endpoint = "{{ endpoint }}";
     </script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='translator/script.js') }}"></script>
 </body>
 </html>

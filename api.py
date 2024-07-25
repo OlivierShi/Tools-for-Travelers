@@ -207,17 +207,18 @@ def get_history():
     return jsonify(sorted_history), 200
 
 
-@app.route('/home.html')
+@app.route('/translator.html')
 def home():
     print(request.base_url)
     endpoint = str(request.base_url)
     if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
         endpoint = endpoint.replace("http", "https")
 
-    if "/home.html" in endpoint:
-        endpoint = endpoint.replace("/home.html", "")
+    if "/translator.html" in endpoint:
+        endpoint = endpoint.replace("/translator.html", "")
         
-    return render_template('home.html', endpoint=endpoint)
+    return render_template('translator.html', endpoint=endpoint)
 
 if __name__ == '__main__':
+    # app.run("0.0.0.0", port=8000) # for VM
     app.run()
