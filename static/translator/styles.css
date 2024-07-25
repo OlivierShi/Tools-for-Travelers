@@ -16,7 +16,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     max-width: 600px;
-    width: 100%;
+    width: 95%;
     margin-top: 20vh; /* Add margin-top to push the container down */
 }
 .button-group {
@@ -75,4 +75,17 @@ audio {
 .history-item strong {
     display: block;
     margin-bottom: 5px;
+}
+.admin-password {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.admin-password input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
 }

@@ -127,6 +127,12 @@ def process_wav(wav_bytes, channels=1, frame_rate=16000):
 def speech_recognition():
     uuid = request.headers.get('Recording-UUID')
     lang = request.headers.get("lang")  # the language of the speech to be recognized
+    password = request.headers.get("password")
+    print(f"Password: {password}")
+    print(BaseConfig.admin_password)
+    if password != BaseConfig.admin_password:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
     print(f"Request received for speech recognition\n{uuid}")
 
     audio_data = request.data
@@ -145,6 +151,10 @@ def speech_recognition():
 def translate():
     uuid = request.headers.get('Recording-UUID')
     lang = request.headers.get("lang")  # the language of the text to be translated
+    password = request.headers.get("password")
+
+    if password != BaseConfig.admin_password:
+        return jsonify({'error': 'Unauthorized'}), 401
     text_to_translate = request.json["text"]
 
     print(f"Request received for translation\n{uuid}, {text_to_translate}")
@@ -178,6 +188,10 @@ def translate():
 def text_to_speech():
     uuid = request.headers.get('Recording-UUID')
     lang = request.headers.get("lang")  # the language of the text to be spoken
+    password = request.headers.get("password")
+
+    if password != BaseConfig.admin_password:
+        return jsonify({'error': 'Unauthorized'}), 401    
     text = request.json["text"]
 
     print(f"Request received for TTS\n{uuid}, {text}")
@@ -201,6 +215,11 @@ def text_to_speech():
 
 @app.route('/translator/api/history', methods=['GET'])
 def get_history():
+    password = request.headers.get("password")
+
+    if password != BaseConfig.admin_password:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
     history = tm.get_translation_history()
     sorted_history = sorted(history, key=lambda x: x["datetime"], reverse=True)
 

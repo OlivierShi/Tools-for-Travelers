@@ -5,6 +5,7 @@ const srButton = document.getElementById('srButton');
 const translateButton = document.getElementById('translateButton');
 const ttsButton = document.getElementById('ttsButton');
 const historyButton = document.getElementById('historyButton');
+const adminPasswordInput = document.getElementById('adminPassword');
 
 const audioPlayback = document.getElementById('audioPlayback');
 const srResult = document.getElementById('srResult');
@@ -96,12 +97,14 @@ playButton.addEventListener('click', () => {
 
 srButton.addEventListener('click', () => {
     if (audioBlob) {
+        const adminPassword = adminPasswordInput.value;
         fetch(endpoint + '/translator/api/sr', {
             method: 'POST',
             headers: {
                 'Content-Type': 'audio/webm',
                 'Recording-UUID': currentUUID,
-                'lang': recordLanguage
+                'lang': recordLanguage,
+                'password': adminPassword
             },
             body: audioBlob
         })
@@ -111,6 +114,7 @@ srButton.addEventListener('click', () => {
             translateButton.disabled = false;
         })
         .catch(error => {
+            srResult.textContent = error.message;
             console.error('Error:', error);
         });
     } else {
@@ -121,12 +125,14 @@ srButton.addEventListener('click', () => {
 translateButton.addEventListener('click', () => {
     const textToTranslate = srResult.textContent.trim(); // Retrieve the editable text
     if (textToTranslate) {
+        const adminPassword = adminPasswordInput.value;
         fetch(endpoint + '/translator/api/translate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Recording-UUID': currentUUID,
-                'lang': recordLanguage
+                'lang': recordLanguage,
+                'password': adminPassword
             },
             body: JSON.stringify({ text: textToTranslate })
         })
@@ -142,6 +148,7 @@ translateButton.addEventListener('click', () => {
             ttsButton.disabled = !translationMain;
         })
         .catch(error => {
+            translationMain.textContent = error.message;
             console.error('Error:', error);
         });
     } else {
@@ -152,12 +159,14 @@ translateButton.addEventListener('click', () => {
 ttsButton.addEventListener('click', () => {
     const textToSpeak = translationMain.textContent;
     if (textToSpeak) {
+        const adminPassword = adminPasswordInput.value;
         fetch(endpoint + '/translator/api/tts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Recording-UUID': currentUUID,
-                'lang': targetLanguage
+                'lang': targetLanguage,
+                'password': adminPassword
             },
             body: JSON.stringify({ text: textToSpeak })
         })
@@ -176,7 +185,13 @@ ttsButton.addEventListener('click', () => {
 });
 
 historyButton.addEventListener('click', () => {
-    fetch(endpoint + '/translator/api/history')
+    const adminPassword = adminPasswordInput.value;
+    fetch(endpoint + '/translator/api/history', {
+            method: 'GET',
+            headers: {
+                'password': adminPassword
+            }
+        })
         .then(response => response.json())
         .then(history => {
             historyContainer.innerHTML = '';

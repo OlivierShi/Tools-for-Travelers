@@ -15,4 +15,6 @@ class BaseConfig():
     afd_host_name = os.getenv('afd_host_name')
     afd_host_ip = os.getenv('afd_host_ip')
 
+    admin_password = os.getenv('admin_password')
+
     db_path = os.path.join(BASE_DIR, "db.sqlite")
