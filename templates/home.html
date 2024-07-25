@@ -9,18 +9,24 @@
 </head>
 <body>
     <div class="container">
-        <button id="recordButton">Hold to Record</button>
-        <button id="playButton" disabled>Play Recording</button>
+        <div class="button-group">
+            <button id="recordZhButton"><i class="fas fa-microphone"></i> Hold to Record (Chinese Input)</button>
+            <button id="recordRuButton"><i class="fas fa-microphone"></i> Удерживайте для записи (ввод на русском)</button>
+        </div>
+
+        <!-- <button id="recordZhButton"><i class="fas fa-microphone"></i> Hold to Record (Chinese Input)</button>
+        <button id="recordRuButton"><i class="fas fa-microphone"></i> Удерживайте для записи (ввод на русском)</button> -->
+        <button id="playButton" disabled><i class="fas fa-play"></i> Play Recording</button>
         <audio id="audioPlayback" controls></audio>
-        <button id="srButton" disabled>Speech Recognition</button>
-        <p id="srResult"></p>
-        <button id="translateButton" disabled>Translate</button>
-        <p id="translationMain"></p>
-        <p id="translationSupplement"></p>
-        <button id="ttsButton" disabled>Speak Out</button>
+        <button id="srButton" disabled><i class="fas fa-microphone-alt"></i> Speech Recognition</button>
+        <div id="srResult" class="editable" contenteditable="true"></div>
+        <button id="translateButton" disabled><i class="fas fa-language"></i> Translate</button>
+        <div id="translationMain" class="editable"></div>
+        <div id="translationSupplement" class="editable"></div>
+        <button id="ttsButton" disabled><i class="fas fa-volume-up"></i> Speak Out</button>
         <audio id="ttsPlayback" controls></audio>
-        <button id="historyButton">Show History</button>
-        <div id="historyContainer" class="scrollable-list"></div>        
+        <button id="historyButton"><i class="fas fa-history"></i> Show History</button>
+        <div id="historyContainer" class="scrollable-list"></div>     
     </div>
 
     <script>

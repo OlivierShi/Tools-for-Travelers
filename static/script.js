@@ -1,4 +1,5 @@
-const recordButton = document.getElementById('recordButton');
+const recordZhButton = document.getElementById('recordZhButton');
+const recordRuButton = document.getElementById('recordRuButton');
 const playButton = document.getElementById('playButton');
 const srButton = document.getElementById('srButton');
 const translateButton = document.getElementById('translateButton');
@@ -16,6 +17,8 @@ let mediaRecorder;
 let audioChunks = [];
 let audioBlob;
 let currentUUID;
+let recordLanguage = 'zh';
+let targetLanguage = 'ru';
 
 navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
@@ -39,20 +42,51 @@ navigator.mediaDevices.getUserMedia({ audio: true })
         console.error('Error accessing media devices.', error);
     });
 
-recordButton.addEventListener('mousedown', () => {
+recordZhButton.addEventListener('mousedown', () => {
+    recordLanguage = 'zh';
+    targetLanguage = 'ru';
     currentUUID = uuid.v4(); // Generate a new UUID for this recording session
     mediaRecorder.start();
 });
 
-recordButton.addEventListener('mouseup', () => {
+recordZhButton.addEventListener('mouseup', () => {
+    srButton.disabled = false;
     mediaRecorder.stop();
 });
 
-recordButton.addEventListener('touchstart', () => {
+recordZhButton.addEventListener('touchstart', () => {
+    recordLanguage = 'zh';
+    targetLanguage = 'ru';
+    currentUUID = uuid.v4(); // Generate a new UUID for this recording session    
     mediaRecorder.start();
 });
 
-recordButton.addEventListener('touchend', () => {
+recordZhButton.addEventListener('touchend', () => {
+    srButton.disabled = false;
+    mediaRecorder.stop();
+});
+
+recordRuButton.addEventListener('mousedown', () => {
+    recordLanguage = 'ru';
+    targetLanguage = 'zh';
+    currentUUID = uuid.v4(); // Generate a new UUID for this recording session
+    mediaRecorder.start();
+});
+
+recordRuButton.addEventListener('mouseup', () => {
+    srButton.disabled = false;
+    mediaRecorder.stop();
+});
+
+recordRuButton.addEventListener('touchstart', () => {
+    recordLanguage = 'ru';
+    targetLanguage = 'zh';
+    currentUUID = uuid.v4(); // Generate a new UUID for this recording session    
+    mediaRecorder.start();
+});
+
+recordRuButton.addEventListener('touchend', () => {
+    srButton.disabled = false;
     mediaRecorder.stop();
 });
 
@@ -66,7 +100,8 @@ srButton.addEventListener('click', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'audio/webm',
-                'Recording-UUID': currentUUID
+                'Recording-UUID': currentUUID,
+                'lang': recordLanguage
             },
             body: audioBlob
         })
@@ -84,20 +119,21 @@ srButton.addEventListener('click', () => {
 });
 
 translateButton.addEventListener('click', () => {
-    const textToTranslate = srResult.textContent;
+    const textToTranslate = srResult.textContent.trim(); // Retrieve the editable text
     if (textToTranslate) {
         fetch(endpoint + '/api/translate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Recording-UUID': currentUUID
+                'Recording-UUID': currentUUID,
+                'lang': recordLanguage
             },
             body: JSON.stringify({ text: textToTranslate })
         })
         .then(response => response.json())
         .then(result => {
             const translations = result.translations;
-            const mainTranslation = translations.find(t => t.to === 'ru');
+            const mainTranslation = translations.find(t => t.to === targetLanguage);
             const supplementTranslation = translations.find(t => t.to === 'en');
 
             translationMain.textContent = mainTranslation ? mainTranslation.text : '';
@@ -120,7 +156,8 @@ ttsButton.addEventListener('click', () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Recording-UUID': currentUUID
+                'Recording-UUID': currentUUID,
+                'lang': targetLanguage
             },
             body: JSON.stringify({ text: textToSpeak })
         })
@@ -128,7 +165,6 @@ ttsButton.addEventListener('click', () => {
         .then(blob => {
             const audioUrl = URL.createObjectURL(blob);
             ttsPlayback.src = audioUrl;
-            // ttsPlayback.style.display = 'block';
             ttsPlayback.play();
         })
         .catch(error => {

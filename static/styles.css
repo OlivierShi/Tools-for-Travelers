@@ -1,59 +1,74 @@
 body {
     font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
-    background-color: #f0f0f0;
 }
-
 .container {
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 600px;
+    width: 100%;
 }
-
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.button-group button {
+    flex: 1;
+    margin: 0 5px;
+    height: 80px; /* Increased height */
+}
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+button:disabled {
+    background-color: #ccc;
+}
+button i {
+    margin-right: 5px;
+}
+button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+audio {
+    width: 100%;
+    margin: 10px 0;
+}
+.editable {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-height: 40px;
+    margin-bottom: 10px;
+}
 .scrollable-list {
     max-height: 200px;
     overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 .history-item {
-    margin-bottom: 10px;
-    padding: 5px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
 }
-
-button {
+.history-item strong {
     display: block;
-    margin: 20px auto;
-    padding: 15px;
-    font-size: 18px;
-    width: 100%;
-    max-width: 300px;
-    border-radius: 5px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-}
-
-button:disabled {
-    background-color: #cccccc;
-}
-
-audio {
-    display: block;
-    margin: 20px auto;
-    width: 100%;
-    max-width: 300px;
-}
-
-#srResult {
-    margin-top: 20px;
-    font-size: 18px;
-    color: #333;
+    margin-bottom: 5px;
 }
