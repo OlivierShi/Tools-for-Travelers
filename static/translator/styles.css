@@ -8,6 +8,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    flex-direction: column;
 }
 .container {
     background: #fff;
@@ -16,6 +17,7 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     max-width: 600px;
     width: 100%;
+    margin-top: 20vh; /* Add margin-top to push the container down */
 }
 .button-group {
     display: flex;
@@ -26,6 +28,8 @@ body {
     flex: 1;
     margin: 0 5px;
     height: 80px; /* Increased height */
+    user-select: none; /* Disable text selection */
+    -webkit-user-select: none; /* Disable text selection for Safari */
 }
 button {
     background-color: #007bff;
