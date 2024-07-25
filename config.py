@@ -12,4 +12,7 @@ class BaseConfig():
     azure_translator_key = os.getenv('azure_translator_key')
     azure_translator_location = os.getenv('azure_translator_location')
 
+    afd_host_name = os.getenv('afd_host_name')
+    afd_host_ip = os.getenv('afd_host_ip')
+
     db_path = os.path.join(BASE_DIR, "db.sqlite")

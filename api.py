@@ -214,8 +214,7 @@ def home():
     if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
         endpoint = endpoint.replace("http", "https")
 
-    if "/translator.html" in endpoint:
-        endpoint = endpoint.replace("/translator.html", "")
+    endpoint = endpoint.replace(BaseConfig.afd_host_ip, BaseConfig.afd_host_name).replace("/translator.html", "")
         
     return render_template('translator.html', endpoint=endpoint)
 
