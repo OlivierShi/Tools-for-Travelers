@@ -96,7 +96,7 @@ playButton.addEventListener('click', () => {
 
 srButton.addEventListener('click', () => {
     if (audioBlob) {
-        fetch(endpoint + '/api/sr', {
+        fetch(endpoint + '/translator/api/sr', {
             method: 'POST',
             headers: {
                 'Content-Type': 'audio/webm',
@@ -121,7 +121,7 @@ srButton.addEventListener('click', () => {
 translateButton.addEventListener('click', () => {
     const textToTranslate = srResult.textContent.trim(); // Retrieve the editable text
     if (textToTranslate) {
-        fetch(endpoint + '/api/translate', {
+        fetch(endpoint + '/translator/api/translate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -152,7 +152,7 @@ translateButton.addEventListener('click', () => {
 ttsButton.addEventListener('click', () => {
     const textToSpeak = translationMain.textContent;
     if (textToSpeak) {
-        fetch(endpoint + '/api/tts', {
+        fetch(endpoint + '/translator/api/tts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ ttsButton.addEventListener('click', () => {
 });
 
 historyButton.addEventListener('click', () => {
-    fetch(endpoint + '/api/history')
+    fetch(endpoint + '/translator/api/history')
         .then(response => response.json())
         .then(history => {
             historyContainer.innerHTML = '';
