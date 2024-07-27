@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: #f0f0f0;
+}
+h1 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+}
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+button:active {
+    background-color: #0056b3;
+}
+#video, #canvas {
+    width: 95%;
+    /* max-width: 320px; */
+    margin-top: 20px;
+}
+#photo {
+    width: 95%;
+    /* max-width: 320px; */
+    margin-top: 20px;
+    display: none;
+}
