@@ -150,32 +150,32 @@ def do_ocr(input_image_url, output_image_filepath):
     pil_img = Image.fromarray(img)
     draw = ImageDraw.Draw(pil_img)
     font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
-    font = ImageFont.truetype(font_path, size=20)
+    font = ImageFont.truetype(font_path, size=40)
 
+    ocr_lines_result = []
     if result.read is not None and len(result.read.blocks[0].lines)> 0:
         lines = result.read.blocks[0].lines
         for line in lines:
-            words = line['words']
-            for word in words:
-                tl = (word['boundingPolygon'][0]["x"], word['boundingPolygon'][0]["y"])
-                tr = (word['boundingPolygon'][1]["x"], word['boundingPolygon'][1]["y"])
-                br = (word['boundingPolygon'][2]["x"], word['boundingPolygon'][2]["y"])
-                bl = (word['boundingPolygon'][3]["x"], word['boundingPolygon'][3]["y"])
+            text = line['text']
+            ocr_lines_result.append(text)
+            tl = (line['boundingPolygon'][0]["x"], line['boundingPolygon'][0]["y"])
+            tr = (line['boundingPolygon'][1]["x"], line['boundingPolygon'][1]["y"])
+            br = (line['boundingPolygon'][2]["x"], line['boundingPolygon'][2]["y"])
+            bl = (line['boundingPolygon'][3]["x"], line['boundingPolygon'][3]["y"])
 
-                text = word['text']
-
-                print(text)
-                
-                # Draw bounding box
-                pts = np.array([tl, tr, br, bl], np.int32)
-                pts = pts.reshape((-1, 1, 2))
-                cv2.polylines(img, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
-                
-                # Put text
-                draw.text((tl[0], tl[1] - 40), text, font=font, fill=(255, 255, 255))
+            print(text)
+            
+            # Draw bounding box
+            pts = np.array([tl, tr, br, bl], np.int32)
+            pts = pts.reshape((-1, 1, 2))
+            cv2.polylines(pil_img, [pts], isClosed=True, color=(0, 0, 255), thickness=1)
+            
+            # Put text
+            draw.text((tl[0], tl[1] - 20), text, font=font, fill=(255, 255, 255))
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     cv2.imwrite(output_image_filepath, img_with_text)
+    return ocr_lines_result
 
 def process_wav(wav_bytes, channels=1, frame_rate=16000):
     # Convert bytes data to AudioSegment
@@ -335,13 +335,13 @@ def ocr():
         # Save the file to the images directory
         file.save(filepath)
         original_image_url = endpoint + f'static/camera/images/{filename}'
-        do_ocr(original_image_url, output_filepath)
+        ocr_lines_result = do_ocr(original_image_url, output_filepath)
         
         # Create the URL to the saved image
         image_url = endpoint + f'static/camera/images/{output_filename}'
         
         # Return the URL as JSON response
-        return jsonify({'newImageUrl': image_url}), 200
+        return jsonify({'newImageUrl': image_url, 'ocr': ocr_lines_result}), 200
 
 @app.route('/camera.html')
 def camera():
