@@ -347,10 +347,12 @@ def camera():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="A simple argparse example")
     
-    is_debug = parser.add_argument('--debug', action='store_true', help="Debug mode")
+    parser.add_argument('--debug', action='store_true', help="Debug mode")
+
+    args = parser.parse_args()
 
     ip = "0.0.0.0"
-    if is_debug:
+    if args.debug:
         BaseConfig.open_debug()
         ip = "localhost"
 
