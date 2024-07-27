@@ -7,6 +7,7 @@ import os
 from pydub import AudioSegment
 import numpy as np
 import cv2
+from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from urllib.parse import urlparse
 from azure.ai.vision.imageanalysis import ImageAnalysisClient
@@ -146,6 +147,11 @@ def do_ocr(input_image_url, output_image_filepath):
         file_path = os.path.join(BaseConfig.BASE_DIR, f"static/camera/images/{filename}")
         img = cv2.imread(file_path)
 
+    pil_img = Image.fromarray(img)
+    draw = ImageDraw.Draw(pil_img)
+    font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
+    font = ImageFont.truetype(font_path, size=20)
+
     if result.read is not None and len(result.read.blocks[0].lines)> 0:
         lines = result.read.blocks[0].lines
         for line in lines:
@@ -166,10 +172,10 @@ def do_ocr(input_image_url, output_image_filepath):
                 cv2.polylines(img, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
                 
                 # Put text
-                cv2.putText(img, text, (tl[0], tl[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2, lineType=cv2.LINE_AA)
+                draw.text((tl[0], tl[1] - 40), text, font=font, fill=(255, 255, 255))
+    img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
-
-    cv2.imwrite(output_image_filepath, img)
+    cv2.imwrite(output_image_filepath, img_with_text)
 
 def process_wav(wav_bytes, channels=1, frame_rate=16000):
     # Convert bytes data to AudioSegment
