@@ -142,9 +142,8 @@ def do_ocr(input_image_url, output_image_filepath):
         img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
     else:
         result = client.analyze_from_url(image_url=input_image_url, visual_features=[VisualFeatures.READ])
-
-        parsed_url = urlparse(input_image_url)
-        file_path = parsed_url.path
+        filename = input_image_url.split("/")[-1]
+        file_path = os.path.join(BaseConfig.BASE_DIR, f"static/camera/images/{filename}")
         img = cv2.imread(file_path)
 
     if result.read is not None and len(result.read.blocks[0].lines)> 0:
@@ -308,6 +307,12 @@ def ocr():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
+    endpoint = str(request.host_url)
+    if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
+        endpoint = endpoint.replace("http", "https")
+
+    endpoint = endpoint.replace(BaseConfig.afd_host_ip, BaseConfig.afd_host_name).replace("/camera.html", "")
+
     file = request.files['file']
     
     if file.filename == '':
@@ -323,19 +328,19 @@ def ocr():
         
         # Save the file to the images directory
         file.save(filepath)
-        original_image_url = url_for('static', filename=f'camera/images/{filename}', _external=True)
+        original_image_url = endpoint + f'static/camera/images/{filename}'
         do_ocr(original_image_url, output_filepath)
         
         # Create the URL to the saved image
-        image_url = url_for('static', filename=f'camera/images/{output_filename}', _external=True)
+        image_url = endpoint + f'static/camera/images/{output_filename}'
         
         # Return the URL as JSON response
         return jsonify({'newImageUrl': image_url}), 200
 
 @app.route('/camera.html')
 def camera():
-    print(request.base_url)
-    endpoint = str(request.base_url)
+    print(request.host_url)
+    endpoint = str(request.host_url)
     if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
         endpoint = endpoint.replace("http", "https")
 

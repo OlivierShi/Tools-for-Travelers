@@ -2,3 +2,4 @@
 *.sqlite
 *.pyc
 static/images/*
+static/camera/images/*
