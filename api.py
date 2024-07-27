@@ -300,8 +300,8 @@ def translator():
 
 # Camera
 
-if not os.path.exists('static/images'):
-    os.makedirs('static/images')
+if not os.path.exists('static/camera/images'):
+    os.makedirs('static/camera/images')
 
 @app.route('/camera/api/ocr', methods=['POST'])
 def ocr():
@@ -318,16 +318,16 @@ def ocr():
         file_id = uuid.uuid4()
         filename = f"ori_{file_id}.png"
         output_filename = f"ocr_{file_id}.png"
-        filepath = os.path.join('static/images', filename)
-        output_filepath = os.path.join('static/images', output_filename)
+        filepath = os.path.join('static/camera/images', filename)
+        output_filepath = os.path.join('static/camera/images', output_filename)
         
         # Save the file to the images directory
         file.save(filepath)
-        original_image_url = url_for('static', filename=f'images/{filename}', _external=True)
+        original_image_url = url_for('static', filename=f'camera/images/{filename}', _external=True)
         do_ocr(original_image_url, output_filepath)
         
         # Create the URL to the saved image
-        image_url = url_for('static', filename=f'images/{output_filename}', _external=True)
+        image_url = url_for('static', filename=f'camera/images/{output_filename}', _external=True)
         
         # Return the URL as JSON response
         return jsonify({'newImageUrl': image_url}), 200
