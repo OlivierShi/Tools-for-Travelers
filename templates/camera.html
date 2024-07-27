@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Query</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='camera/styles.css') }}">
+</head>
+<body>
+    <button id="start-camera">Start Camera</button>
+    <video id="video" autoplay playsinline></video>
+    <button id="take-photo" style="display:none;">Take Photo</button>
+    <img id="photo" alt="Captured Photo"/>
+    <script>
+        var endpoint = "{{ endpoint }}";
+    </script>
+    <script src="{{ url_for('static', filename='camera/script.js') }}"></script>
+</body>
+</html>

@@ -1,14 +1,24 @@
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, send_file, render_template, url_for
 from flask_cors import CORS
 import requests
 import uuid
 import json
+import os
 from pydub import AudioSegment
+import numpy as np
+import cv2
 from io import BytesIO
+from urllib.parse import urlparse
+from azure.ai.vision.imageanalysis import ImageAnalysisClient
+from azure.ai.vision.imageanalysis.models import VisualFeatures
+from azure.core.credentials import AzureKeyCredential
 from config import BaseConfig
 from translation_manager import TranslationManager
 from sqlite import SQLiteStorage
 from datetime import datetime
+import time
+import argparse
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -111,6 +121,56 @@ def translate_text(text, lang):
     response = request.json()
     return response[0]["translations"]
 
+def do_ocr(input_image_url, output_image_filepath):
+    client = ImageAnalysisClient(
+        endpoint=BaseConfig.azure_computer_vision_endpoint,
+        credential=AzureKeyCredential(BaseConfig.azure_computer_vision_key)
+    )
+
+    if BaseConfig.debug:
+        mock_image ="https://learn.microsoft.com/azure/ai-services/computer-vision/media/quickstarts/presentation.png"
+        result = client.analyze_from_url(image_url=mock_image, visual_features=[VisualFeatures.READ])
+
+
+        # Fetch the image
+        response = requests.get(mock_image)
+        response.raise_for_status()  # Ensure the request was successful
+        # Convert the response content to a numpy array
+        image_array = np.frombuffer(response.content, np.uint8)
+
+        # Decode the numpy array as an image
+        img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+    else:
+        result = client.analyze_from_url(image_url=input_image_url, visual_features=[VisualFeatures.READ])
+
+        parsed_url = urlparse(input_image_url)
+        file_path = parsed_url.path
+        img = cv2.imread(file_path)
+
+    if result.read is not None and len(result.read.blocks[0].lines)> 0:
+        lines = result.read.blocks[0].lines
+        for line in lines:
+            words = line['words']
+            for word in words:
+                tl = (word['boundingPolygon'][0]["x"], word['boundingPolygon'][0]["y"])
+                tr = (word['boundingPolygon'][1]["x"], word['boundingPolygon'][1]["y"])
+                br = (word['boundingPolygon'][2]["x"], word['boundingPolygon'][2]["y"])
+                bl = (word['boundingPolygon'][3]["x"], word['boundingPolygon'][3]["y"])
+
+                text = word['text']
+
+                print(text)
+                
+                # Draw bounding box
+                pts = np.array([tl, tr, br, bl], np.int32)
+                pts = pts.reshape((-1, 1, 2))
+                cv2.polylines(img, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
+                
+                # Put text
+                cv2.putText(img, text, (tl[0], tl[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2, lineType=cv2.LINE_AA)
+
+
+    cv2.imwrite(output_image_filepath, img)
 
 def process_wav(wav_bytes, channels=1, frame_rate=16000):
     # Convert bytes data to AudioSegment
@@ -227,7 +287,7 @@ def get_history():
 
 
 @app.route('/translator.html')
-def home():
+def translator():
     print(request.base_url)
     endpoint = str(request.base_url)
     if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
@@ -237,6 +297,61 @@ def home():
         
     return render_template('translator.html', endpoint=endpoint)
 
+
+# Camera
+
+if not os.path.exists('static/images'):
+    os.makedirs('static/images')
+
+@app.route('/camera/api/ocr', methods=['POST'])
+def ocr():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file:
+        # Generate a unique filename using UUID
+        file_id = uuid.uuid4()
+        filename = f"ori_{file_id}.png"
+        output_filename = f"ocr_{file_id}.png"
+        filepath = os.path.join('static/images', filename)
+        output_filepath = os.path.join('static/images', output_filename)
+        
+        # Save the file to the images directory
+        file.save(filepath)
+        original_image_url = url_for('static', filename=f'images/{filename}', _external=True)
+        do_ocr(original_image_url, output_filepath)
+        
+        # Create the URL to the saved image
+        image_url = url_for('static', filename=f'images/{output_filename}', _external=True)
+        
+        # Return the URL as JSON response
+        return jsonify({'newImageUrl': image_url}), 200
+
+@app.route('/camera.html')
+def camera():
+    print(request.base_url)
+    endpoint = str(request.base_url)
+    if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
+        endpoint = endpoint.replace("http", "https")
+
+    endpoint = endpoint.replace(BaseConfig.afd_host_ip, BaseConfig.afd_host_name).replace("/camera.html", "")
+        
+    return render_template('camera.html', endpoint=endpoint)
+
+
 if __name__ == '__main__':
-    # app.run("0.0.0.0", port=8000) # for VM
-    app.run()
+    parser = argparse.ArgumentParser(description="A simple argparse example")
+    
+    is_debug = parser.add_argument('--debug', action='store_true', help="Debug mode")
+
+    ip = "0.0.0.0"
+    if is_debug:
+        BaseConfig.open_debug()
+        ip = "localhost"
+
+    app.run(ip, port=8000) 

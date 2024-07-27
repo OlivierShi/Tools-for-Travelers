@@ -1,6 +1,6 @@
 # Translator
 
 # TODO:
-- [ ] Add languages
-- [ ] Add translation implementation
-- [ ] Add history
+- [x] Add languages
+- [x] Add translation implementation
+- [x] Add history
