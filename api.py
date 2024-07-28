@@ -147,7 +147,11 @@ def do_ocr(input_image_url, output_image_filepath):
         file_path = os.path.join(BaseConfig.BASE_DIR, f"static/camera/images/{filename}")
         img = cv2.imread(file_path)
 
-    pil_img = Image.fromarray(img)
+    # Convert the image to RGB for PIL
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # Convert the image to a PIL Image
+    pil_img = Image.fromarray(img_rgb)
+    # Create a drawing object
     draw = ImageDraw.Draw(pil_img)
     font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
     font = ImageFont.truetype(font_path, size=40)
@@ -165,13 +169,13 @@ def do_ocr(input_image_url, output_image_filepath):
 
             print(text)
             
-            # Draw bounding box
-            pts = np.array([tl, tr, br, bl], np.int32)
-            pts = pts.reshape((-1, 1, 2))
-            cv2.polylines(pil_img, [pts], isClosed=True, color=(0, 0, 255), thickness=1)
+            # Draw bounding box using PIL
+            pts = [tl, tr, br, bl, tl]  # Closing the box by repeating the first point
+            draw.line(pts, fill=(255, 0, 0), width=1)
             
-            # Put text
+            # Draw text using PIL
             draw.text((tl[0], tl[1] - 20), text, font=font, fill=(255, 255, 255))
+            
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     cv2.imwrite(output_image_filepath, img_with_text)
