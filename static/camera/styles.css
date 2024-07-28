@@ -13,6 +13,12 @@ h1 {
     font-size: 1.5em;
     margin-bottom: 20px;
 }
+.buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
 button {
     background-color: #007BFF;
     color: white;
@@ -25,6 +31,16 @@ button {
 }
 button:active {
     background-color: #0056b3;
+}
+.icon-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #007BFF;
+}
+.icon-button:active {
+    color: #0056b3;
 }
 #video, #canvas {
     width: 95%;
