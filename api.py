@@ -156,18 +156,21 @@ def do_ocr(input_image_url, output_image_filepath):
     font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
     font = ImageFont.truetype(font_path, size=30)
 
-    ocr_lines_result = []
+    ocr_translations = []
+
     if result.read is not None and len(result.read.blocks[0].lines)> 0:
         lines = result.read.blocks[0].lines
         for line in lines:
             text = line['text']
-            ocr_lines_result.append(text)
             tl = (line['boundingPolygon'][0]["x"], line['boundingPolygon'][0]["y"])
             tr = (line['boundingPolygon'][1]["x"], line['boundingPolygon'][1]["y"])
             br = (line['boundingPolygon'][2]["x"], line['boundingPolygon'][2]["y"])
             bl = (line['boundingPolygon'][3]["x"], line['boundingPolygon'][3]["y"])
 
             print(text)
+
+            translation_results = translate_text(text, "ru")
+            ocr_translations.append([text, f"{translation_results[0]['text']} ({translation_results[1]['text']})"])
             
             # Draw bounding box using PIL
             pts = [tl, tr, br, bl, tl]  # Closing the box by repeating the first point
@@ -179,7 +182,7 @@ def do_ocr(input_image_url, output_image_filepath):
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     cv2.imwrite(output_image_filepath, img_with_text)
-    return ocr_lines_result
+    return ocr_translations
 
 def process_wav(wav_bytes, channels=1, frame_rate=16000):
     # Convert bytes data to AudioSegment
@@ -339,17 +342,11 @@ def ocr():
         # Save the file to the images directory
         file.save(filepath)
         original_image_url = endpoint + f'static/camera/images/{filename}'
-        ocr_lines_result = do_ocr(original_image_url, output_filepath)
+        ocr_translations = do_ocr(original_image_url, output_filepath)
         
         # Create the URL to the saved image
         image_url = endpoint + f'static/camera/images/{output_filename}'
-        ocr_translations = []
-        for line_text in ocr_lines_result:
-            print(line_text)
-            translation_results = translate_text(line_text, "ru")
-            # [{"text": "Привет, мир!", "to": "ru"}, {"text": "Hello, world!", "to": "en"}]
-            ocr_translations.append([line_text, f"{translation_results[0]['text']} ({translation_results[1]['text']})"])
-        
+
         # Return the URL as JSON response
         # {'newImageUrl': image_url, 'ocr': [['ocr russian text 1', 'translated chinese text 1'], ['ocr russian text 2', 'translated chinese text 2']]}
 
