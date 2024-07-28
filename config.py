@@ -16,6 +16,11 @@ class BaseConfig():
     azure_computer_vision_key = os.getenv('azure_computer_vision_key')
     azure_computer_vision_endpoint = os.getenv('azure_computer_vision_endpoint')
 
+    openai_api_key = os.getenv('openai_api_key')
+    openai_azure_endpoint = os.getenv('openai_azure_endpoint')
+    openai_api_version = os.getenv('openai_api_version')
+    openai_api_model = os.getenv('openai_api_model')   
+
     afd_host_name = os.getenv('afd_host_name')
     afd_host_ip = os.getenv('afd_host_ip')
 

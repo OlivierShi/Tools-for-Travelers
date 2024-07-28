@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome</h1>
+        <button onclick="navigateTo('camera')">Camera, OCR, Translation</button>
+        <button onclick="navigateTo('translator')">Audio, SR, Translation, TTS</button>
+        <button onclick="navigateTo('search')">ChatGPT API Access</button>
+    </div>
+
+    <script>
+        var endpoint = "{{ endpoint }}";
+        function navigateTo(page) {
+            let url = endpoint + '/' + page + ".html";
+            window.location.href = url;
+        }
+    </script>
+</body>
+</html>

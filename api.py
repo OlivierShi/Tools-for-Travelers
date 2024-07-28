@@ -8,6 +8,7 @@ from pydub import AudioSegment
 import numpy as np
 import cv2
 from PIL import Image, ImageDraw, ImageFont
+from openai import AzureOpenAI
 from io import BytesIO
 from urllib.parse import urlparse
 from azure.ai.vision.imageanalysis import ImageAnalysisClient
@@ -246,6 +247,32 @@ def process_wav(wav_bytes, channels=1, frame_rate=16000):
     audio.export(output_io, format="wav", codec="pcm_s16le")
     return output_io.getvalue()
 
+
+def chatgpt_reply(message):
+
+    client = AzureOpenAI(
+        azure_endpoint = BaseConfig.openai_azure_endpoint, 
+        api_key=BaseConfig.openai_api_key,  
+        api_version=BaseConfig.openai_api_version
+        )
+
+    messages = [
+        {"role": "system", "content": "I am an AI assistant that helps people find information. My responses are helpful, positive, empathetic, entertaining, and **engaging**. My responses are **summarized**, **concise**, **succinct**."},
+        {"role": "user", "content": f"{message}"}
+    ]
+
+    completion = client.chat.completions.create(
+        model=BaseConfig.openai_api_model,
+        messages = messages,
+        temperature=0.7,
+        max_tokens=500,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+
+    return completion.choices[0].message.content 
+    
 @app.route('/translator/api/sr', methods=['POST'])
 def speech_recognition():
     uuid = request.headers.get('Recording-UUID')
@@ -406,6 +433,12 @@ def ocr():
 
         return jsonify({'newImageUrl': image_url, 'ocr': ocr_translations}), 200
 
+@app.route('/search/api/gpt', methods=['POST'])
+def search_query():
+    text = request.json["text"]
+    response = chatgpt_reply(text)
+    return jsonify({"response": response}), 200
+
 @app.route('/camera.html')
 def camera():
     print(request.host_url)
@@ -418,7 +451,33 @@ def camera():
     return render_template('camera.html', endpoint=endpoint)
 
 
+@app.route('/search.html')
+def search():
+    print(request.host_url)
+    endpoint = str(request.host_url)
+    if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
+        endpoint = endpoint.replace("http", "https")
+
+    endpoint = endpoint.replace(BaseConfig.afd_host_ip, BaseConfig.afd_host_name).replace("/search.html", "")
+        
+    return render_template('search.html', endpoint=endpoint)
+
+
+@app.route('/travel.html')
+def home():
+    print(request.host_url)
+    endpoint = str(request.host_url)
+    if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
+        endpoint = endpoint.replace("http", "https")
+
+    endpoint = endpoint.replace(BaseConfig.afd_host_ip, BaseConfig.afd_host_name).replace("/travel.html", "")
+        
+    return render_template('travel.html', endpoint=endpoint)
+
+
 if __name__ == '__main__':
+    # responses = chatgpt_reply("我在俄罗斯旅游，帮我生成一句俄罗斯语，问一下附件酒店和景点")
+    # print(responses)
     # responses = translate_text_batch(["Hello", "World"], "zh")
     # print(responses)
     parser = argparse.ArgumentParser(description="A simple argparse example")
