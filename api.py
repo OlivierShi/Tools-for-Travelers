@@ -154,12 +154,13 @@ def do_ocr(input_image_url, output_image_filepath):
     # Create a drawing object
     draw = ImageDraw.Draw(pil_img)
     font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
-    font = ImageFont.truetype(font_path, size=30)
+    font = ImageFont.truetype(font_path, size=20)
 
     ocr_translations = []
 
     if result.read is not None and len(result.read.blocks[0].lines)> 0:
         lines = result.read.blocks[0].lines
+        y_offset = 0
         for line in lines:
             text = line['text']
             tl = (line['boundingPolygon'][0]["x"], line['boundingPolygon'][0]["y"])
@@ -176,9 +177,19 @@ def do_ocr(input_image_url, output_image_filepath):
             pts = [tl, tr, br, bl, tl]  # Closing the box by repeating the first point
             draw.line(pts, fill=(255, 0, 0), width=1)
             
+            # Adjust text position to avoid overlap
+            text_position = (tl[0], tl[1] - 20 + y_offset)
+            text_background_position = (text_position[0], text_position[1] - 5)
+
+            # Draw text background
+            text_size = draw.textsize(translation_results[0]['text'], font=font)
+            background_rect = [text_background_position, (text_background_position[0] + text_size[0], text_background_position[1] + text_size[1] + 5)]
+            draw.rectangle(background_rect, fill=(0, 0, 0))
+
             # Draw text using PIL
-            draw.text((tl[0], tl[1] - 20), translation_results[0]['text'], font=font, fill=(255, 255, 255))
-            
+            draw.text(text_position, translation_results[0]['text'], font=font, fill=(255, 255, 255))
+
+            y_offset += text_size[1] + 10  # Update y_offset for the next line to avoid overlap            
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     cv2.imwrite(output_image_filepath, img_with_text)
