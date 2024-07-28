@@ -179,7 +179,7 @@ def do_ocr(input_image_url, output_image_filepath):
             
             # Adjust text position to avoid overlap
             text_position = (tl[0], tl[1] - 20 + y_offset)
-            text_background_position = (text_position[0], text_position[1] - 5)
+            text_background_position = (text_position[0], text_position[1])
 
             # Get the size of the text
             text_bbox = draw.textbbox(text_position, translation_results[0]['text'], font=font)
@@ -187,7 +187,8 @@ def do_ocr(input_image_url, output_image_filepath):
             text_height = text_bbox[3] - text_bbox[1]
 
             # Draw text background
-            background_rect = [text_background_position, (text_background_position[0] + text_width, text_background_position[1] + text_height + 5)]
+            background_rect = [text_background_position, 
+                               (text_background_position[0] + text_width, text_background_position[1] + text_height)]
             draw.rectangle(background_rect, fill=(0, 0, 0))
             # Draw text using PIL
             draw.text(text_position, translation_results[0]['text'], font=font, fill=(255, 255, 255))
