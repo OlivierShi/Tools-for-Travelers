@@ -181,15 +181,18 @@ def do_ocr(input_image_url, output_image_filepath):
             text_position = (tl[0], tl[1] - 20 + y_offset)
             text_background_position = (text_position[0], text_position[1] - 5)
 
-            # Draw text background
-            text_size = draw.textsize(translation_results[0]['text'], font=font)
-            background_rect = [text_background_position, (text_background_position[0] + text_size[0], text_background_position[1] + text_size[1] + 5)]
-            draw.rectangle(background_rect, fill=(0, 0, 0))
+            # Get the size of the text
+            text_bbox = draw.textbbox(text_position, translation_results[0]['text'], font=font)
+            text_width = text_bbox[2] - text_bbox[0]
+            text_height = text_bbox[3] - text_bbox[1]
 
+            # Draw text background
+            background_rect = [text_background_position, (text_background_position[0] + text_width, text_background_position[1] + text_height + 5)]
+            draw.rectangle(background_rect, fill=(0, 0, 0))
             # Draw text using PIL
             draw.text(text_position, translation_results[0]['text'], font=font, fill=(255, 255, 255))
 
-            y_offset += text_size[1] + 10  # Update y_offset for the next line to avoid overlap            
+            y_offset += text_height + 5  # Update y_offset for the next line to avoid overlap            
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     cv2.imwrite(output_image_filepath, img_with_text)
