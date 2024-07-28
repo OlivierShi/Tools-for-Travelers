@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import os
 from dotenv import load_dotenv
+from PIL import ImageFont
 
 class BaseConfig():
     BASE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -21,7 +22,9 @@ class BaseConfig():
     admin_password = os.getenv('admin_password')
 
     db_path = os.path.join(BASE_DIR, "db.sqlite")
-
+    font_path = os.path.join(BASE_DIR, "static/NotoSansCJK-Regular.ttc")
+    image_font_zh = ImageFont.truetype(font_path, size=20)
+    
     debug = False
 
     def open_debug():

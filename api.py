@@ -189,8 +189,6 @@ def do_ocr(input_image_url, output_image_filepath):
     pil_img = Image.fromarray(img_rgb)
     # Create a drawing object
     draw = ImageDraw.Draw(pil_img)
-    font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
-    font = ImageFont.truetype(font_path, size=20)
 
     ocr_translations = []
 
@@ -220,7 +218,7 @@ def do_ocr(input_image_url, output_image_filepath):
             text_background_position = (text_position[0], text_position[1])
 
             # Get the size of the text
-            text_bbox = draw.textbbox(text_position, trans['translations'][0]['text'], font=font)
+            text_bbox = draw.textbbox(text_position, trans['translations'][0]['text'], font=BaseConfig.image_font_zh)
             text_width = text_bbox[2] - text_bbox[0]
             text_height = text_bbox[3] - text_bbox[1]
 
@@ -229,7 +227,7 @@ def do_ocr(input_image_url, output_image_filepath):
                                (text_background_position[0] + text_width, text_background_position[1] + text_height + 5)]
             draw.rectangle(background_rect, fill=(0, 0, 0))
             # Draw text using PIL
-            draw.text(text_position, trans['translations'][0]['text'], font=font, fill=(255, 255, 255))
+            draw.text(text_position, trans['translations'][0]['text'], font=BaseConfig.image_font_zh, fill=(255, 255, 255))
 
             y_offset += text_height + 5  # Update y_offset for the next line to avoid overlap            
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
