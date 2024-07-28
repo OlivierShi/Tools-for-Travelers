@@ -15,6 +15,18 @@
     <video id="video" autoplay playsinline></video>
     <button id="take-photo" style="display:none;">Take Photo</button>
     <img id="photo" alt="Captured Photo"/>
+    <div id="ocr-results" style="display:none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>OCR Text</th>
+                    <th>Translation</th>
+                </tr>
+            </thead>
+            <tbody id="ocr-table-body">
+            </tbody>
+        </table>
+    </div>
     <script>
         var endpoint = "{{ endpoint }}";
     </script>

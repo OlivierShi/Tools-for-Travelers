@@ -343,9 +343,17 @@ def ocr():
         
         # Create the URL to the saved image
         image_url = endpoint + f'static/camera/images/{output_filename}'
+        ocr_translations = []
+        for line_text in ocr_lines_result:
+            print(line_text)
+            translation_results = translate_text(line_text, "ru")
+            # [{"text": "Привет, мир!", "to": "ru"}, {"text": "Hello, world!", "to": "en"}]
+            ocr_translations.append([line_text, f"{translation_results[0]['text']} ({translation_results[1]['text']})"])
         
         # Return the URL as JSON response
-        return jsonify({'newImageUrl': image_url, 'ocr': ocr_lines_result}), 200
+        # {'newImageUrl': image_url, 'ocr': [['ocr russian text 1', 'translated chinese text 1'], ['ocr russian text 2', 'translated chinese text 2']]}
+
+        return jsonify({'newImageUrl': image_url, 'ocr': ocr_translations}), 200
 
 @app.route('/camera.html')
 def camera():
