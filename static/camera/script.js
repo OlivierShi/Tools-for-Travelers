@@ -1,3 +1,6 @@
+let useFrontCamera = true;
+let currentStream = null;
+
 document.getElementById('start-camera').addEventListener('click', async function() {
     const video = document.getElementById('video');
     const takePhotoButton = document.getElementById('take-photo');
@@ -6,13 +9,50 @@ document.getElementById('start-camera').addEventListener('click', async function
     // Hide the previously taken photo
     photo.style.display = 'none';
 
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+    }
+
+    const constraints = {
+        video: {
+            facingMode: useFrontCamera ? 'user' : 'environment'
+        }
+    };
+
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        currentStream = stream;
         video.srcObject = stream;
         video.style.display = 'block';
         takePhotoButton.style.display = 'block';
-    } catch (err) {
+    } 
+    catch (err) {
         console.error("Error accessing the camera: ", err);
+    }
+});
+
+document.getElementById('switch-camera').addEventListener('click', async function() {
+    useFrontCamera = !useFrontCamera;
+    const switchCameraButton = document.getElementById('switch-camera');
+    switchCameraButton.innerHTML = useFrontCamera ? '<i class="fas fa-sync-alt"></i>' : '<i class="fas fa-sync-alt"></i>';
+
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+    }
+
+    const constraints = {
+        video: {
+            facingMode: useFrontCamera ? 'user' : 'environment'
+        }
+    };
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        currentStream = stream;
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+    } catch (err) {
+        console.error("Error switching the camera: ", err);
     }
 });
 
