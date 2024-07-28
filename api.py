@@ -122,30 +122,66 @@ def translate_text(text, lang):
     response = request.json()
     return response[0]["translations"]
 
+def translate_text_batch(texts, lang):
+    if lang not in ["zh", "ru"]:
+        raise ValueError("Language not supported")
+    
+    if lang == "zh":
+        from_lang = "zh-Hans"
+        to_lang = "ru"
+    else:
+        from_lang = "ru"
+        to_lang = "zh-Hans"
+
+    url = "https://api.cognitive.microsofttranslator.com/translate"
+
+    params = {
+        "api-version": "3.0",
+        "from": from_lang,
+        "to": [to_lang, 'en']
+    }
+
+    headers = {
+        "Ocp-Apim-Subscription-Key": TRANSLATOR_KEY,
+        'Ocp-Apim-Subscription-Region': TRANSLATOR_LOCATION,
+        'Content-type': 'application/json',
+        'X-ClientTraceId': str(uuid.uuid4())
+    }
+
+    body = [{"text": text} for text in texts]
+
+    request = requests.post(url, params=params, headers=headers, json=body)
+    response = request.json()
+    return response
+
 def do_ocr(input_image_url, output_image_filepath):
     client = ImageAnalysisClient(
         endpoint=BaseConfig.azure_computer_vision_endpoint,
         credential=AzureKeyCredential(BaseConfig.azure_computer_vision_key)
     )
 
-    if BaseConfig.debug:
-        mock_image ="https://learn.microsoft.com/azure/ai-services/computer-vision/media/quickstarts/presentation.png"
-        result = client.analyze_from_url(image_url=mock_image, visual_features=[VisualFeatures.READ])
+    try:
+        if BaseConfig.debug:
+            mock_image ="https://learn.microsoft.com/azure/ai-services/computer-vision/media/quickstarts/presentation.png"
+            result = client.analyze_from_url(image_url=mock_image, visual_features=[VisualFeatures.READ])
 
 
-        # Fetch the image
-        response = requests.get(mock_image)
-        response.raise_for_status()  # Ensure the request was successful
-        # Convert the response content to a numpy array
-        image_array = np.frombuffer(response.content, np.uint8)
+            # Fetch the image
+            response = requests.get(mock_image)
+            response.raise_for_status()  # Ensure the request was successful
+            # Convert the response content to a numpy array
+            image_array = np.frombuffer(response.content, np.uint8)
 
-        # Decode the numpy array as an image
-        img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-    else:
-        result = client.analyze_from_url(image_url=input_image_url, visual_features=[VisualFeatures.READ])
-        filename = input_image_url.split("/")[-1]
-        file_path = os.path.join(BaseConfig.BASE_DIR, f"static/camera/images/{filename}")
-        img = cv2.imread(file_path)
+            # Decode the numpy array as an image
+            img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+        else:
+            result = client.analyze_from_url(image_url=input_image_url, visual_features=[VisualFeatures.READ])
+            filename = input_image_url.split("/")[-1]
+            file_path = os.path.join(BaseConfig.BASE_DIR, f"static/camera/images/{filename}")
+            img = cv2.imread(file_path)
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
     # Convert the image to RGB for PIL
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -158,20 +194,22 @@ def do_ocr(input_image_url, output_image_filepath):
 
     ocr_translations = []
 
-    if result.read is not None and len(result.read.blocks[0].lines)> 0:
+    if result.read is not None and len(result.read.blocks[0].lines) > 0:
+        batch_texts = [line['text'] for line in result.read.blocks[0].lines]
+        batch_translations = translate_text_batch(batch_texts, "ru")
+
         lines = result.read.blocks[0].lines
         y_offset = 0
-        for line in lines:
+        for line, trans in zip(lines, batch_translations):
             text = line['text']
             tl = (line['boundingPolygon'][0]["x"], line['boundingPolygon'][0]["y"])
             tr = (line['boundingPolygon'][1]["x"], line['boundingPolygon'][1]["y"])
             br = (line['boundingPolygon'][2]["x"], line['boundingPolygon'][2]["y"])
             bl = (line['boundingPolygon'][3]["x"], line['boundingPolygon'][3]["y"])
 
-            print(text)
 
-            translation_results = translate_text(text, "ru")
-            ocr_translations.append([text, f"{translation_results[0]['text']} ({translation_results[1]['text']})"])
+            # translation_results = translate_text(text, "ru")
+            ocr_translations.append([text, f"{trans['translations'][0]['text']} ({trans['translations'][1]['text']})"])
             
             # Draw bounding box using PIL
             pts = [tl, tr, br, bl, tl]  # Closing the box by repeating the first point
@@ -182,16 +220,16 @@ def do_ocr(input_image_url, output_image_filepath):
             text_background_position = (text_position[0], text_position[1])
 
             # Get the size of the text
-            text_bbox = draw.textbbox(text_position, translation_results[0]['text'], font=font)
+            text_bbox = draw.textbbox(text_position, trans['translations'][0]['text'], font=font)
             text_width = text_bbox[2] - text_bbox[0]
             text_height = text_bbox[3] - text_bbox[1]
 
             # Draw text background
             background_rect = [text_background_position, 
-                               (text_background_position[0] + text_width, text_background_position[1] + text_height)]
+                               (text_background_position[0] + text_width, text_background_position[1] + text_height + 5)]
             draw.rectangle(background_rect, fill=(0, 0, 0))
             # Draw text using PIL
-            draw.text(text_position, translation_results[0]['text'], font=font, fill=(255, 255, 255))
+            draw.text(text_position, trans['translations'][0]['text'], font=font, fill=(255, 255, 255))
 
             y_offset += text_height + 5  # Update y_offset for the next line to avoid overlap            
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
@@ -359,6 +397,9 @@ def ocr():
         original_image_url = endpoint + f'static/camera/images/{filename}'
         ocr_translations = do_ocr(original_image_url, output_filepath)
         
+        if ocr_translations is None:
+            return jsonify({'error': 'Error OCR'}), 500
+        
         # Create the URL to the saved image
         image_url = endpoint + f'static/camera/images/{output_filename}'
 
@@ -380,6 +421,8 @@ def camera():
 
 
 if __name__ == '__main__':
+    # responses = translate_text_batch(["Hello", "World"], "zh")
+    # print(responses)
     parser = argparse.ArgumentParser(description="A simple argparse example")
     
     parser.add_argument('--debug', action='store_true', help="Debug mode")
