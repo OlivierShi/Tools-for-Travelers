@@ -177,7 +177,7 @@ def do_ocr(input_image_url, output_image_filepath):
             draw.line(pts, fill=(255, 0, 0), width=1)
             
             # Draw text using PIL
-            draw.text((tl[0], tl[1] - 20), text, font=font, fill=(255, 255, 255))
+            draw.text((tl[0], tl[1] - 20), translation_results[0]['text'], font=font, fill=(255, 255, 255))
             
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
