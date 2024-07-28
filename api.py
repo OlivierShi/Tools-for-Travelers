@@ -154,7 +154,7 @@ def do_ocr(input_image_url, output_image_filepath):
     # Create a drawing object
     draw = ImageDraw.Draw(pil_img)
     font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
-    font = ImageFont.truetype(font_path, size=40)
+    font = ImageFont.truetype(font_path, size=30)
 
     ocr_lines_result = []
     if result.read is not None and len(result.read.blocks[0].lines)> 0:
