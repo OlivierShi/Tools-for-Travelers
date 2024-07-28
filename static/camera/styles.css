@@ -53,3 +53,25 @@ button:active {
     margin-top: 20px;
     display: none;
 }
+#ocr-results {
+    width: 90%;
+    max-width: 320px;
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+table {
+    width: 90%;
+    max-width: 320px;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+th {
+    background-color: #007BFF;
+    color: white;
+}

@@ -5,9 +5,11 @@ document.getElementById('start-camera').addEventListener('click', async function
     const video = document.getElementById('video');
     const takePhotoButton = document.getElementById('take-photo');
     const photo = document.getElementById('photo');
+    const ocrResults = document.getElementById('ocr-results');
 
     // Hide the previously taken photo
     photo.style.display = 'none';
+    ocrResults.style.display = 'none';
 
     if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
@@ -60,6 +62,8 @@ document.getElementById('take-photo').addEventListener('click', async function()
     const video = document.getElementById('video');
     const photo = document.getElementById('photo');
     const canvas = document.createElement('canvas');
+    const ocrResults = document.getElementById('ocr-results');
+    const ocrTableBody = document.getElementById('ocr-table-body');
 
     // Set canvas size to match video size
     canvas.width = video.videoWidth;
@@ -103,6 +107,24 @@ document.getElementById('take-photo').addEventListener('click', async function()
 
         // Replace the original image with the new image from the OCR result
         photo.setAttribute('src', ocrResult.newImageUrl);
+
+        // Clear previous OCR results
+        ocrTableBody.innerHTML = '';
+
+        // Populate the OCR results table
+        ocrResult.ocr.forEach(row => {
+            const tr = document.createElement('tr');
+            const tdOcr = document.createElement('td');
+            const tdTranslation = document.createElement('td');
+            tdOcr.textContent = row[0];
+            tdTranslation.textContent = row[1];
+            tr.appendChild(tdOcr);
+            tr.appendChild(tdTranslation);
+            ocrTableBody.appendChild(tr);
+        });
+
+        // Display the OCR results
+        ocrResults.style.display = 'block';
     } catch (err) {
         console.error('Error processing the photo:', err);
     }

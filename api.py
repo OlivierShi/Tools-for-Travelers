@@ -154,32 +154,50 @@ def do_ocr(input_image_url, output_image_filepath):
     # Create a drawing object
     draw = ImageDraw.Draw(pil_img)
     font_path = os.path.join(BaseConfig.BASE_DIR, "static/NotoSansCJK-Regular.ttc")
-    font = ImageFont.truetype(font_path, size=30)
+    font = ImageFont.truetype(font_path, size=20)
 
-    ocr_lines_result = []
+    ocr_translations = []
+
     if result.read is not None and len(result.read.blocks[0].lines)> 0:
         lines = result.read.blocks[0].lines
+        y_offset = 0
         for line in lines:
             text = line['text']
-            ocr_lines_result.append(text)
             tl = (line['boundingPolygon'][0]["x"], line['boundingPolygon'][0]["y"])
             tr = (line['boundingPolygon'][1]["x"], line['boundingPolygon'][1]["y"])
             br = (line['boundingPolygon'][2]["x"], line['boundingPolygon'][2]["y"])
             bl = (line['boundingPolygon'][3]["x"], line['boundingPolygon'][3]["y"])
 
             print(text)
+
+            translation_results = translate_text(text, "ru")
+            ocr_translations.append([text, f"{translation_results[0]['text']} ({translation_results[1]['text']})"])
             
             # Draw bounding box using PIL
             pts = [tl, tr, br, bl, tl]  # Closing the box by repeating the first point
             draw.line(pts, fill=(255, 0, 0), width=1)
             
+            # Adjust text position to avoid overlap
+            text_position = (tl[0], tl[1] - 20 + y_offset)
+            text_background_position = (text_position[0], text_position[1])
+
+            # Get the size of the text
+            text_bbox = draw.textbbox(text_position, translation_results[0]['text'], font=font)
+            text_width = text_bbox[2] - text_bbox[0]
+            text_height = text_bbox[3] - text_bbox[1]
+
+            # Draw text background
+            background_rect = [text_background_position, 
+                               (text_background_position[0] + text_width, text_background_position[1] + text_height)]
+            draw.rectangle(background_rect, fill=(0, 0, 0))
             # Draw text using PIL
-            draw.text((tl[0], tl[1] - 20), text, font=font, fill=(255, 255, 255))
-            
+            draw.text(text_position, translation_results[0]['text'], font=font, fill=(255, 255, 255))
+
+            y_offset += text_height + 5  # Update y_offset for the next line to avoid overlap            
     img_with_text = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
     cv2.imwrite(output_image_filepath, img_with_text)
-    return ocr_lines_result
+    return ocr_translations
 
 def process_wav(wav_bytes, channels=1, frame_rate=16000):
     # Convert bytes data to AudioSegment
@@ -339,13 +357,15 @@ def ocr():
         # Save the file to the images directory
         file.save(filepath)
         original_image_url = endpoint + f'static/camera/images/{filename}'
-        ocr_lines_result = do_ocr(original_image_url, output_filepath)
+        ocr_translations = do_ocr(original_image_url, output_filepath)
         
         # Create the URL to the saved image
         image_url = endpoint + f'static/camera/images/{output_filename}'
-        
+
         # Return the URL as JSON response
-        return jsonify({'newImageUrl': image_url, 'ocr': ocr_lines_result}), 200
+        # {'newImageUrl': image_url, 'ocr': [['ocr russian text 1', 'translated chinese text 1'], ['ocr russian text 2', 'translated chinese text 2']]}
+
+        return jsonify({'newImageUrl': image_url, 'ocr': ocr_translations}), 200
 
 @app.route('/camera.html')
 def camera():
