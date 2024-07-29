@@ -439,6 +439,7 @@ def ocr():
 
 @app.route('/search/api/gpt', methods=['POST'])
 def search_query():
+    uuid = request.headers.get('Search-UUID')
     password = request.headers.get("password")
 
     if password != BaseConfig.admin_password:
@@ -446,7 +447,22 @@ def search_query():
         
     text = request.json["text"]
     response = chatgpt_reply(text)
+    datetime_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    tm.save_search(id=uuid, datetime=datetime_str, text=text, response=response)
+
     return jsonify({"response": response}), 200
+
+@app.route('/search/api/history', methods=['GET'])
+def get_search_history():
+    password = request.headers.get("password")
+
+    if password != BaseConfig.admin_password:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    history = tm.get_search_history()
+    sorted_history = sorted(history, key=lambda x: x["datetime"], reverse=True)
+
+    return jsonify(sorted_history), 200
 
 @app.route('/camera.html')
 def camera():

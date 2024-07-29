@@ -68,6 +68,19 @@
             border-radius: 5px;
             width: 100%;
         }
+        .scrollable-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .history-item {
+            border-bottom: 1px solid #ccc;
+            padding: 10px 0;
+        }
+        .history-item strong {
+            display: block;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -79,11 +92,15 @@
         <textarea id="query" placeholder="Enter your query here"></textarea>
         <button onclick="sendQuery()">Send</button>
         <div id="result" class="result"></div>
+        <button id="historyButton"><i class="fas fa-history"></i> Show History</button>
+        <div id="historyContainer" class="scrollable-list"></div>
     </div>
 
     <script>
         var endpoint = "{{ endpoint }}";
         const adminPasswordInput = document.getElementById('adminPassword');
+        const historyButton = document.getElementById('historyButton');
+        const historyContainer = document.getElementById('historyContainer');
 
         async function sendQuery() {
             const query = document.getElementById('query').value;
@@ -110,7 +127,30 @@
             } catch (error) {
                 resultDiv.innerHTML = 'Error: ' + error.message;
             }
-        }
+        };
+
+        historyButton.addEventListener('click', () => {
+            const adminPassword = adminPasswordInput.value;
+            fetch(endpoint + '/search/api/history', {
+                    method: 'GET',
+                    headers: {
+                        'password': adminPassword
+                    }
+                })
+                .then(response => response.json())
+                .then(history => {
+                    historyContainer.innerHTML = '';
+                    history.forEach(item => {
+                        const historyItem = document.createElement('div');
+                        historyItem.classList.add('history-item');
+                        historyItem.innerHTML = `<strong>${item.datetime}</strong><br>Text: ${item.text}<br>Result: ${item.response}`;
+                        historyContainer.appendChild(historyItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching history:', error);
+                });
+        });
     </script>
 </body>
 </html>
