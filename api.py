@@ -397,6 +397,10 @@ if not os.path.exists('static/camera/images'):
 def ocr():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
+    password = request.headers.get("password")
+
+    if password != BaseConfig.admin_password:
+        return jsonify({'error': 'Unauthorized'}), 401    
     
     endpoint = str(request.host_url)
     if not ("localhost" in endpoint or "127.0.0.1" in endpoint or endpoint.startswith("https")):
@@ -435,6 +439,11 @@ def ocr():
 
 @app.route('/search/api/gpt', methods=['POST'])
 def search_query():
+    password = request.headers.get("password")
+
+    if password != BaseConfig.admin_password:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
     text = request.json["text"]
     response = chatgpt_reply(text)
     return jsonify({"response": response}), 200

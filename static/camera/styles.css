@@ -75,3 +75,16 @@ th {
     background-color: #007BFF;
     color: white;
 }
+.admin-password {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.admin-password input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+}

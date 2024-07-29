@@ -16,8 +16,12 @@
 
     <script>
         var endpoint = "{{ endpoint }}";
+        if (!endpoint.endsWith('/')) {
+            endpoint += '/';
+        }
+        
         function navigateTo(page) {
-            let url = endpoint + '/' + page + ".html";
+            let url = endpoint + page + ".html";
             window.location.href = url;
         }
     </script>

@@ -1,3 +1,5 @@
+const adminPasswordInput = document.getElementById('adminPassword');
+
 let useFrontCamera = true;
 let currentStream = null;
 
@@ -90,10 +92,13 @@ document.getElementById('take-photo').addEventListener('click', async function()
         // Create a FormData object and append the image file
         const formData = new FormData();
         formData.append('file', blob, 'photo.png');
-
+        const adminPassword = adminPasswordInput.value;
         // Post the image to the API
         const ocrResponse = await fetch(endpoint + '/camera/api/ocr', {
             method: 'POST',
+            headers: {
+                'password': adminPassword
+            },
             body: formData
         });
 

@@ -55,27 +55,48 @@
             background-color: #f9f9f9;
             border-radius: 4px;
         }
+        .admin-password {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .admin-password input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>ChatGPT Querying</h1>
+        <div class="admin-password">
+            <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+        </div>
         <textarea id="query" placeholder="Enter your query here"></textarea>
         <button onclick="sendQuery()">Send</button>
         <div id="result" class="result"></div>
     </div>
 
     <script>
+        var endpoint = "{{ endpoint }}";
+        const adminPasswordInput = document.getElementById('adminPassword');
+
         async function sendQuery() {
             const query = document.getElementById('query').value;
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = 'Loading...';
+            const adminPassword = adminPasswordInput.value;
 
             try {
-                const response = await fetch('/search/api/gpt', {
+                const response = await fetch(endpoint + '/search/api/gpt', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'password': adminPassword
                     },
                     body: JSON.stringify({ text: query })
                 });
