@@ -19,9 +19,13 @@ Planning a trip to Russia but worried about the language barrier? Our Multilingu
 With our Multilingual Travel Assistant, you'll navigate Russia with ease and confidence, overcoming any language challenges along the way. Safe travels!
 
 ![image](https://github.com/user-attachments/assets/6d183c55-eebb-4759-8200-a7ccf0a41806)
+
 ![image](https://github.com/user-attachments/assets/f6ff5516-ced7-46a1-9ad8-c5a73e6e4ba2)
+
 ![image](https://github.com/user-attachments/assets/dc64fee1-b2a0-4417-8176-1951bae2421c)
+
 ![image](https://github.com/user-attachments/assets/6ee593a1-c7ff-4d10-9053-9bcb2c83507e)
+
 
 # How to
 Create a file named `.env` in the root directory of the project, and fill in the following information:
