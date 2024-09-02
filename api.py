@@ -501,10 +501,7 @@ def home():
 
 
 if __name__ == '__main__':
-    # responses = chatgpt_reply("我在俄罗斯旅游，帮我生成一句俄罗斯语，问一下附件酒店和景点")
-    # print(responses)
-    # responses = translate_text_batch(["Hello", "World"], "zh")
-    # print(responses)
+
     parser = argparse.ArgumentParser(description="A simple argparse example")
     
     parser.add_argument('--debug', action='store_true', help="Debug mode")
