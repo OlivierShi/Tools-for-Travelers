@@ -18,6 +18,34 @@ Planning a trip to Russia but worried about the language barrier? Our Multilingu
 
 With our Multilingual Travel Assistant, you'll navigate Russia with ease and confidence, overcoming any language challenges along the way. Safe travels!
 
+
+# How to
+Create a file named `.env` in the root directory of the project, and fill in the following information:
+
+```
+# Azure Speech
+azure_speech_key=
+azure_speech_region=
+
+# Azure Translator
+azure_translator_key=
+azure_translator_location=
+
+# Azure GPT
+openai_api_key=
+openai_azure_endpoint=
+openai_api_version=
+openai_api_model=
+
+# AFD Host name
+afd_host_name=
+afd_host_ip=
+
+# Admin Password
+admin_password=
+```
+
+
 # TODO:
 - [ ] Add more languages to support
 - [ ] Add information retrieval feature, like nearby attractions, restaurants, WC, bank, etc.
